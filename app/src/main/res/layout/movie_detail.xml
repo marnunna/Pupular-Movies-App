@@ -1,0 +1,56 @@
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <ImageView
+        android:id="@+id/movie_detail_poster"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:minWidth="150dp"
+        android:minHeight="225dp"
+        />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceLarge"
+        android:id="@+id/original_title"
+        android:layout_above="@+id/rating"
+        android:layout_toRightOf="@+id/movie_detail_poster"
+        android:layout_toEndOf="@+id/movie_detail_poster"
+        android:layout_marginBottom="15dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/rating"
+        android:layout_above="@+id/release_date"
+        android:layout_alignLeft="@+id/original_title"
+        android:layout_alignStart="@+id/original_title"
+        android:layout_marginBottom="15dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:id="@+id/release_date"
+        android:layout_alignBottom="@+id/movie_detail_poster"
+        android:layout_alignLeft="@+id/rating"
+        android:layout_alignStart="@+id/rating"/>
+
+    <TextView
+        xmlns:android="http://schemas.android.com/apk/res/android"
+        xmlns:tools="http://schemas.android.com/tools"
+        android:id="@+id/movie_detail"
+        style="?android:attr/textAppearanceSmall"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:padding="16dp"
+        android:textIsSelectable="true"
+        android:layout_below="@id/movie_detail_poster"
+        tools:context="com.marnun.popularmoviesapp.MovieDetailFragment"/>
+
+</RelativeLayout>

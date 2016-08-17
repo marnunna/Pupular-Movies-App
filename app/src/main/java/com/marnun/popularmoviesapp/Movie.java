@@ -8,50 +8,50 @@ import java.util.Date;
  */
 public class Movie implements Serializable {
 
-    private String originalTitle;
-    private String posterPath;
-    private String plotSynopsis;
-    private Double userRating;
-    private Date releaseDate;
+    String original_title;
+    String poster_path;
+    String overview;
+    Double vote_average;
+    Date release_date;
 
     public String getOriginalTitle() {
-        return originalTitle;
+        return original_title;
     }
 
     public void setOriginalTitle(String originalTitle) {
-        this.originalTitle = originalTitle;
+        this.original_title = originalTitle;
     }
 
     public String getPosterPath() {
-        return posterPath;
+        return poster_path;
     }
 
     public void setPosterPath(String posterPath) {
-        this.posterPath = posterPath;
+        this.poster_path = posterPath;
     }
 
     public String getPlotSynopsis() {
-        return plotSynopsis;
+        return overview;
     }
 
     public void setPlotSynopsis(String plotSynopsis) {
-        this.plotSynopsis = plotSynopsis;
+        this.overview = plotSynopsis;
     }
 
     public Double getUserRating() {
-        return userRating;
+        return vote_average;
     }
 
     public void setUserRating(Double userRating) {
-        this.userRating = userRating;
+        this.vote_average = userRating;
     }
 
     public Date getReleaseDate() {
-        return releaseDate;
+        return release_date;
     }
 
     public void setReleaseDate(Date releaseDate) {
-        this.releaseDate = releaseDate;
+        this.release_date = releaseDate;
     }
 
     @Override
@@ -59,15 +59,15 @@ public class Movie implements Serializable {
 
         StringBuilder stringBuilder = new StringBuilder();
 
-        stringBuilder.append("originalTitle: "+ originalTitle);
+        stringBuilder.append("original_title: "+ original_title);
         stringBuilder.append(", ");
-        stringBuilder.append("posterPath: "+posterPath);
+        stringBuilder.append("poster_path: "+ poster_path);
         stringBuilder.append(", ");
-        stringBuilder.append("plotSynopsis: "+plotSynopsis);
+        stringBuilder.append("overview: "+ overview);
         stringBuilder.append(", ");
-        stringBuilder.append("userRating: "+userRating);
+        stringBuilder.append("vote_average: "+ vote_average);
         stringBuilder.append(", ");
-        stringBuilder.append("releaseDate: "+releaseDate);
+        stringBuilder.append("release_date: "+ release_date);
 
 
         return stringBuilder.toString();

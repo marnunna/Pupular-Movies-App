@@ -20,7 +20,10 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.marnun.popularmoviesapp.settings.SettingsActivity;
 import com.squareup.picasso.Picasso;
 
@@ -41,6 +44,12 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
+
 /**
  * An activity representing a list of Movies. This activity
  * has different presentations for handset and tablet-size devices. On
@@ -49,7 +58,7 @@ import java.util.Locale;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class MovieListActivity extends AppCompatActivity {
+public class MovieListActivity extends AppCompatActivity implements Callback<TheMovieDbMovies> {
 
     private final String LOG_TAG = MovieListActivity.class.getSimpleName();
 
@@ -105,13 +114,6 @@ public class MovieListActivity extends AppCompatActivity {
             return true;
         }
         return super.onOptionsItemSelected(item);
-    }
-
-    private void updateMovies() {
-
-        MoviesTask moviesTask = new MoviesTask();
-        moviesTask.execute();
-
     }
 
     public class MoviesRecyclerViewAdapter
@@ -182,6 +184,81 @@ public class MovieListActivity extends AppCompatActivity {
                 return super.toString(); //+ " '" + mContentView.getText() + "'";
             }
         }
+    }
+
+    public static int getPosterWidth() {
+        //The width of every poster is calculated dividing the width of the grid by the number of columns
+        return mRecyclerView.getWidth() / mColumnsNo;
+    }
+
+    public static int getPosterHeight() {
+        return (int) (getPosterWidth() * 1.5);
+    }
+
+    private void updateMovies() {
+
+//        MoviesTask moviesTask = new MoviesTask();
+//        moviesTask.execute();
+
+        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MovieListActivity.this);
+        String key = getString(R.string.orders_preference_key);
+        String defaultValue = getString(R.string.order_popular_value);
+        String sortOrder = sharedPref.getString(key, defaultValue);
+        String apiKey = BuildConfig.API_KEY;
+
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd")
+                .create();
+        Retrofit retrofit = new Retrofit.Builder()
+                .baseUrl(TheMovieDbApi.ENDPOINT)
+                .addConverterFactory(GsonConverterFactory.create(gson))
+                .build();
+
+        // prepare call in Retrofit 2.0
+        TheMovieDbApi theMovieDbApi = retrofit.create(TheMovieDbApi.class);
+
+        Call<TheMovieDbMovies> call = theMovieDbApi.loadMovies(sortOrder, apiKey);
+        //asynchronous call
+        call.enqueue(this);
+
+    }
+
+    private void displayMovies(List<Movie> movies) {
+        TextView errorTextView = (TextView) findViewById(R.id.error_textview);
+        if (movies != null) {
+
+            errorTextView.setVisibility(View.GONE);
+
+            //if is in portrait mode the grid of films have 2 columns, if in landscape 3
+            mColumnsNo = 2;
+            int orientation = getResources().getConfiguration().orientation;
+            if(orientation == Configuration.ORIENTATION_LANDSCAPE){
+                mColumnsNo = 3;
+            }
+
+            GridLayoutManager layoutManager = new GridLayoutManager(MovieListActivity.this, mColumnsNo);
+            mRecyclerView.setLayoutManager(layoutManager);
+
+            MoviesRecyclerViewAdapter moviesAdapter = new MoviesRecyclerViewAdapter(movies);
+            mRecyclerView.setAdapter(moviesAdapter);
+
+        } else {
+
+            errorTextView.setText(getString(R.string.error_message));
+            errorTextView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    @Override
+    public void onResponse(Call<TheMovieDbMovies> call, Response<TheMovieDbMovies> response) {
+        List<Movie> movies = response.body().results;
+
+        displayMovies(movies);
+    }
+
+    @Override
+    public void onFailure(Call<TheMovieDbMovies> call, Throwable t) {
+        Toast.makeText(MovieListActivity.this, t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
     }
 
     public class MoviesTask extends AsyncTask<Void, Void, List<Movie>> {
@@ -318,45 +395,16 @@ public class MovieListActivity extends AppCompatActivity {
                 e.printStackTrace();
             }
 
+
             // This will only happen if there was an error getting or parsing the forecast.
             return null;
         }
 
         @Override
         protected void onPostExecute(List<Movie> movies) {
-            TextView errorTextView = (TextView) findViewById(R.id.error_textview);
-            if (movies != null) {
-
-                errorTextView.setVisibility(View.GONE);
-
-                //if is in portrait mode the grid of films have 2 columns, if in landscape 3
-                mColumnsNo = 2;
-                int orientation = getResources().getConfiguration().orientation;
-                if(orientation == Configuration.ORIENTATION_LANDSCAPE){
-                    mColumnsNo = 3;
-                }
-
-                GridLayoutManager layoutManager = new GridLayoutManager(MovieListActivity.this, mColumnsNo);
-                mRecyclerView.setLayoutManager(layoutManager);
-
-                MoviesRecyclerViewAdapter moviesAdapter = new MoviesRecyclerViewAdapter(movies);
-                mRecyclerView.setAdapter(moviesAdapter);
-
-            } else {
-
-                errorTextView.setText(getString(R.string.error_message));
-                errorTextView.setVisibility(View.VISIBLE);
-            }
+            displayMovies(movies);
         }
 
     }
 
-    public static int getPosterWidth() {
-        //The width of every poster is calculated dividing the width of the grid by the number of columns
-        return mRecyclerView.getWidth() / mColumnsNo;
-    }
-
-    public static int getPosterHeight() {
-        return (int) (getPosterWidth() * 1.5);
-    }
 }

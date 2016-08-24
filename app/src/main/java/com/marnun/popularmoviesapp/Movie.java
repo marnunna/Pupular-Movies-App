@@ -13,6 +13,7 @@ public class Movie implements Serializable {
     String overview;
     Double vote_average;
     Date release_date;
+    String backdrop_path;
 
     public String getOriginalTitle() {
         return original_title;
@@ -52,6 +53,14 @@ public class Movie implements Serializable {
 
     public void setReleaseDate(Date releaseDate) {
         this.release_date = releaseDate;
+    }
+
+    public String getBackdropPath() {
+        return backdrop_path;
+    }
+
+    public void setBackdropPath(String backdrop_path) {
+        this.backdrop_path = backdrop_path;
     }
 
     @Override

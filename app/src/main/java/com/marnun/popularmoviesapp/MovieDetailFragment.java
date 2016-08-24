@@ -60,7 +60,7 @@ public class MovieDetailFragment extends Fragment {
         if (appBarLayout != null) {
             appBarLayout.setTitle("");
             Picasso.with(getActivity())
-                    .load("http://image.tmdb.org/t/p/w500"+mMovie.getPosterPath())
+                    .load("http://image.tmdb.org/t/p/original"+mMovie.getBackdropPath())
                     .into((ImageView) appBarLayout.findViewById(R.id.image_collapsing_toolbar));
         }
     }

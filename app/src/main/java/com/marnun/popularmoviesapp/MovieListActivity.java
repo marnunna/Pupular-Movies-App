@@ -4,15 +4,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
-import android.net.Uri;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,22 +24,7 @@ import com.google.gson.GsonBuilder;
 import com.marnun.popularmoviesapp.settings.SettingsActivity;
 import com.squareup.picasso.Picasso;
 
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.text.ParseException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
-import java.util.Locale;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -259,152 +241,6 @@ public class MovieListActivity extends AppCompatActivity implements Callback<The
     @Override
     public void onFailure(Call<TheMovieDbMovies> call, Throwable t) {
         Toast.makeText(MovieListActivity.this, t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
-    }
-
-    public class MoviesTask extends AsyncTask<Void, Void, List<Movie>> {
-
-        private final String LOG_TAG = MoviesTask.class.getSimpleName();
-
-        private List<Movie> getMoviesDataFromJson(String moviesJsonStr)
-                throws JSONException, ParseException {
-
-            List<Movie> movies = new ArrayList<>();
-
-            // These are the names of the JSON objects that need to be extracted.
-            final String OWM_MOVIES = "results";
-            final String OWM_POSTER_PATH = "poster_path";
-            final String OWM_OR_TITLE = "original_title";
-            final String OWM_PLOT = "overview";
-            final String OWM_RATING = "vote_average";
-            final String OWM_REL_DATE = "release_date";
-
-            JSONObject moviesJson = new JSONObject(moviesJsonStr);
-            JSONArray moviesArray = moviesJson.getJSONArray(OWM_MOVIES);
-
-            for(int i = 0; i < moviesArray.length(); i++) {
-
-                JSONObject movieObject = moviesArray.getJSONObject(i);
-
-                String title = movieObject.getString(OWM_OR_TITLE);
-                String posterPath = movieObject.getString(OWM_POSTER_PATH);
-                String plotSynopsis = movieObject.getString(OWM_PLOT);
-                Double userRating = movieObject.getDouble(OWM_RATING);
-                String releaseDateString = movieObject.getString(OWM_REL_DATE);
-                Date releaseDate = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(releaseDateString);
-
-                Movie movie = new Movie();
-                movie.setPosterPath(posterPath);
-                movie.setOriginalTitle(title);
-                movie.setPlotSynopsis(plotSynopsis);
-                movie.setUserRating(userRating);
-                movie.setReleaseDate(releaseDate);
-
-                movies.add(movie);
-
-            }
-
-//            for (Movie movie: movies ) {
-//                Log.v(LOG_TAG, movie.toString());
-//            }
-
-            return movies;
-
-        }
-
-        @Override
-        protected List<Movie> doInBackground(Void... voids) {
-
-            // These two need to be declared outside the try/catch
-            // so that they can be closed in the finally block.
-            HttpURLConnection urlConnection = null;
-            BufferedReader reader = null;
-
-            // Will contain the raw JSON response as a string.
-            String moviesJsonStr = null;
-
-            try {
-                final String FORECAST_BASE_URL =
-                        "http://api.themoviedb.org/3/movie";
-
-                final String APIKEY_PARAM = "api_key";
-
-                SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MovieListActivity.this);
-                String key = getString(R.string.orders_preference_key);
-                String defaultValue = getString(R.string.order_popular_value);
-                String sortOrder = sharedPref.getString(key, defaultValue);
-//                Log.v(LOG_TAG, "sortOrder: "+sortOrder);
-
-                Uri builtUri = Uri.parse(FORECAST_BASE_URL).buildUpon()
-                        .appendPath(sortOrder)
-                        .appendQueryParameter(APIKEY_PARAM, BuildConfig.API_KEY)
-                        .build();
-
-                URL url = new URL(builtUri.toString());
-
-                // Create the request to OpenWeatherMap, and open the connection
-                urlConnection = (HttpURLConnection) url.openConnection();
-                urlConnection.setRequestMethod("GET");
-                urlConnection.connect();
-
-                // Read the input stream into a String
-                InputStream inputStream = urlConnection.getInputStream();
-                StringBuilder buffer = new StringBuilder();
-                if (inputStream == null) {
-                    // Nothing to do.
-                    return null;
-                }
-                reader = new BufferedReader(new InputStreamReader(inputStream));
-
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    // Since it's JSON, adding a newline isn't necessary (it won't affect parsing)
-                    // But it does make debugging a *lot* easier if you print out the completed
-                    // buffer for debugging.
-                    buffer.append(line + "\n");
-                }
-
-                if (buffer.length() == 0) {
-                    // Stream was empty.  No point in parsing.
-                    return null;
-                }
-                moviesJsonStr = buffer.toString();
-            } catch (IOException e) {
-                Log.e(LOG_TAG, "Error ", e);
-                // If the code didn't successfully get the weather data, there's no point in attemping
-                // to parse it.
-                return null;
-            } finally {
-                if (urlConnection != null) {
-                    urlConnection.disconnect();
-                }
-                if (reader != null) {
-                    try {
-                        reader.close();
-                    } catch (final IOException e) {
-                        Log.e(LOG_TAG, "Error closing stream", e);
-                    }
-                }
-            }
-
-//            Log.v(LOG_TAG, moviesJsonStr);
-
-            try {
-                return getMoviesDataFromJson(moviesJsonStr);
-            } catch (Exception e) {
-                Log.e(LOG_TAG, e.getMessage(), e);
-                e.printStackTrace();
-            }
-
-
-            // This will only happen if there was an error getting or parsing the forecast.
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(List<Movie> movies) {
-            displayMovies(movies);
-        }
-
     }
 
 }

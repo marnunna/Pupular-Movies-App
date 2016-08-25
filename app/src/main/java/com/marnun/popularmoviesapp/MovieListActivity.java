@@ -40,7 +40,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
  * item details. On tablets, the activity presents the list of items and
  * item details side-by-side using two vertical panes.
  */
-public class MovieListActivity extends AppCompatActivity implements Callback<TheMovieDbMovies> {
+public class MovieListActivity extends AppCompatActivity implements Callback<Movies> {
 
     private final String LOG_TAG = MovieListActivity.class.getSimpleName();
 
@@ -192,14 +192,14 @@ public class MovieListActivity extends AppCompatActivity implements Callback<The
                 .setDateFormat("yyyy-MM-dd")
                 .create();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(TheMovieDbApi.ENDPOINT)
+                .baseUrl(MoviesRequest.ENDPOINT)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
         // prepare call in Retrofit 2.0
-        TheMovieDbApi theMovieDbApi = retrofit.create(TheMovieDbApi.class);
+        MoviesRequest moviesRequest = retrofit.create(MoviesRequest.class);
 
-        Call<TheMovieDbMovies> call = theMovieDbApi.loadMovies(sortOrder, apiKey);
+        Call<Movies> call = moviesRequest.loadMovies(sortOrder, apiKey);
         //asynchronous call
         call.enqueue(this);
 
@@ -232,14 +232,14 @@ public class MovieListActivity extends AppCompatActivity implements Callback<The
     }
 
     @Override
-    public void onResponse(Call<TheMovieDbMovies> call, Response<TheMovieDbMovies> response) {
+    public void onResponse(Call<Movies> call, Response<Movies> response) {
         List<Movie> movies = response.body().results;
 
         displayMovies(movies);
     }
 
     @Override
-    public void onFailure(Call<TheMovieDbMovies> call, Throwable t) {
+    public void onFailure(Call<Movies> call, Throwable t) {
         Toast.makeText(MovieListActivity.this, t.getLocalizedMessage(), Toast.LENGTH_SHORT).show();
     }
 

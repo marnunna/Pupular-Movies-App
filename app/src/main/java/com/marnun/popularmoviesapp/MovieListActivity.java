@@ -192,14 +192,14 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
                 .setDateFormat("yyyy-MM-dd")
                 .create();
         Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(MoviesRequest.ENDPOINT)
+                .baseUrl(MoviesService.ENDPOINT)
                 .addConverterFactory(GsonConverterFactory.create(gson))
                 .build();
 
         // prepare call in Retrofit 2.0
-        MoviesRequest moviesRequest = retrofit.create(MoviesRequest.class);
+        MoviesService moviesService = retrofit.create(MoviesService.class);
 
-        Call<Movies> call = moviesRequest.loadMovies(sortOrder, apiKey);
+        Call<Movies> call = moviesService.loadMovies(sortOrder, apiKey);
         //asynchronous call
         call.enqueue(this);
 

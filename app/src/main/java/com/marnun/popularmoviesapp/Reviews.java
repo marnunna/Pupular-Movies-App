@@ -5,8 +5,8 @@ import java.util.List;
 /**
  * Created by Marco on 17/08/2016.
  */
-public class TheMovieDbMovies {
+public class Reviews {
 
-    List<Movie> results;
+    List<Review> results;
 
 }

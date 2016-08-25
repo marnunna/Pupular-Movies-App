@@ -4,12 +4,15 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -17,6 +20,11 @@ import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+import retrofit2.Retrofit;
+import retrofit2.converter.gson.GsonConverterFactory;
 
 /**
  * A fragment representing a single Movie detail screen.
@@ -26,15 +34,20 @@ import butterknife.ButterKnife;
  */
 public class MovieDetailFragment extends Fragment {
 
+    public static final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
+
     public static final String ARG_MOVIE = "movie";
-
+    @BindView(R.id.movie_detail)
+    TextView mMoviePlotView;
+    @BindView(R.id.original_title)
+    TextView mTitleView;
+    @BindView(R.id.rating)
+    TextView mRatingView;
+    @BindView(R.id.release_date)
+    TextView mReleaseDateView;
+    @BindView(R.id.movie_detail_poster)
+    ImageView mPosterDetailView;
     private Movie mMovie;
-
-    @BindView(R.id.movie_detail) TextView mMoviePlotView;
-    @BindView(R.id.original_title) TextView mTitleView;
-    @BindView(R.id.rating) TextView mRatingView;
-    @BindView(R.id.release_date) TextView mReleaseDateView;
-    @BindView(R.id.movie_detail_poster) ImageView mPosterDetailView;
 
     /**
      * Mandatory empty constructor for the fragment manager to instantiate the
@@ -60,7 +73,7 @@ public class MovieDetailFragment extends Fragment {
         if (appBarLayout != null) {
             appBarLayout.setTitle("");
             Picasso.with(getActivity())
-                    .load("http://image.tmdb.org/t/p/original"+mMovie.getBackdropPath())
+                    .load("http://image.tmdb.org/t/p/original" + mMovie.getBackdropPath())
                     .into((ImageView) appBarLayout.findViewById(R.id.image_collapsing_toolbar));
         }
     }
@@ -94,11 +107,55 @@ public class MovieDetailFragment extends Fragment {
             int posterWidth = MovieListActivity.getPosterWidth();
             int posterHeight = MovieListActivity.getPosterHeight();
             Picasso.with(getActivity())
-                    .load("http://image.tmdb.org/t/p/w500"+mMovie.getPosterPath())
+                    .load("http://image.tmdb.org/t/p/w500" + mMovie.getPosterPath())
                     .resize(posterWidth, posterHeight)
                     .into(mPosterDetailView);
+
+            Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
+
+            Retrofit retrofitTrailers = new Retrofit.Builder()
+                    .baseUrl(TrailersService.ENDPOINT)
+                    .addConverterFactory(GsonConverterFactory.create(gson))
+                    .build();
+            TrailersService trailersService = retrofitTrailers.create(TrailersService.class);
+            Call<Trailers> callTrailers = trailersService.loadTrailers(mMovie.getId(), BuildConfig.API_KEY);
+            callTrailers.enqueue(new Callback<Trailers>() {
+                @Override
+                public void onResponse(Call<Trailers> call, Response<Trailers> response) {
+                    Trailers trailers = response.body();
+                    for (Trailer trailer : trailers.results) {
+                        Log.d(LOG_TAG, trailer.toString());
+                    }
+                }
+                @Override
+                public void onFailure(Call<Trailers> call, Throwable t) {
+
+                }
+            });
+
+            Retrofit retrofitReviews = new Retrofit.Builder()
+                    .baseUrl(ReviewsService.ENDPOINT)
+                    .addConverterFactory(GsonConverterFactory.create(gson))
+                    .build();
+            ReviewsService reviewsService = retrofitReviews.create(ReviewsService.class);
+            Call<Reviews> callReviews = reviewsService.loadReviews(mMovie.getId(), BuildConfig.API_KEY);
+            callReviews.enqueue(new Callback<Reviews>() {
+                @Override
+                public void onResponse(Call<Reviews> call, Response<Reviews> response) {
+                    Reviews reviews = response.body();
+                    for (Review review : reviews.results) {
+                        Log.d(LOG_TAG, review.toString());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<Reviews> call, Throwable t) {
+
+                }
+            });
         }
 
         return rootView;
     }
+
 }

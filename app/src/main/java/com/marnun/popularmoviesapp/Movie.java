@@ -1,6 +1,7 @@
 package com.marnun.popularmoviesapp;
 
 import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.Date;
 
 /**
@@ -8,12 +9,21 @@ import java.util.Date;
  */
 public class Movie implements Serializable {
 
+    String id;
     String original_title;
     String poster_path;
     String overview;
     Double vote_average;
     Date release_date;
     String backdrop_path;
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
+    }
 
     public String getOriginalTitle() {
         return original_title;
@@ -65,20 +75,27 @@ public class Movie implements Serializable {
 
     @Override
     public String toString() {
-
-        StringBuilder stringBuilder = new StringBuilder();
-
-        stringBuilder.append("original_title: "+ original_title);
-        stringBuilder.append(", ");
-        stringBuilder.append("poster_path: "+ poster_path);
-        stringBuilder.append(", ");
-        stringBuilder.append("overview: "+ overview);
-        stringBuilder.append(", ");
-        stringBuilder.append("vote_average: "+ vote_average);
-        stringBuilder.append(", ");
-        stringBuilder.append("release_date: "+ release_date);
-
-
-        return stringBuilder.toString();
+        StringBuilder result = new StringBuilder();
+        String newLine = System.getProperty("line.separator");
+        result.append( this.getClass().getName() );
+        result.append( " Object {" );
+        result.append(newLine);
+        //determine fields declared in this class only (no fields of superclass)
+        Field[] fields = this.getClass().getDeclaredFields();
+        //print field names paired with their values
+        for ( Field field : fields  ) {
+            result.append("  ");
+            try {
+                result.append( field.getName() );
+                result.append(": ");
+                //requires access to private field:
+                result.append( field.get(this) );
+            } catch ( IllegalAccessException ex ) {
+                System.out.println(ex);
+            }
+            result.append(newLine);
+        }
+        result.append("}");
+        return result.toString();
     }
 }

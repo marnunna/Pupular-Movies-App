@@ -4,6 +4,8 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
+import android.support.v7.widget.LinearLayoutManager;
+import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,6 +18,7 @@ import com.google.gson.GsonBuilder;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
+import java.util.List;
 import java.util.Locale;
 
 import butterknife.BindView;
@@ -37,16 +40,25 @@ public class MovieDetailFragment extends Fragment {
     public static final String LOG_TAG = MovieDetailFragment.class.getSimpleName();
 
     public static final String ARG_MOVIE = "movie";
-    @BindView(R.id.movie_detail)
+
+    @BindView(R.id.movie_synopsis)
     TextView mMoviePlotView;
+
     @BindView(R.id.original_title)
     TextView mTitleView;
+
     @BindView(R.id.rating)
     TextView mRatingView;
+
     @BindView(R.id.release_date)
     TextView mReleaseDateView;
+
     @BindView(R.id.movie_detail_poster)
     ImageView mPosterDetailView;
+
+    @BindView(R.id.reviews_list)
+    RecyclerView mReviewsList;
+
     private Movie mMovie;
 
     /**
@@ -127,6 +139,7 @@ public class MovieDetailFragment extends Fragment {
                         Log.d(LOG_TAG, trailer.toString());
                     }
                 }
+
                 @Override
                 public void onFailure(Call<Trailers> call, Throwable t) {
 
@@ -142,10 +155,11 @@ public class MovieDetailFragment extends Fragment {
             callReviews.enqueue(new Callback<Reviews>() {
                 @Override
                 public void onResponse(Call<Reviews> call, Response<Reviews> response) {
-                    Reviews reviews = response.body();
-                    for (Review review : reviews.results) {
-                        Log.d(LOG_TAG, review.toString());
-                    }
+                    List<Review> reviews = response.body().results;
+                    Log.d(LOG_TAG, reviews.toString());
+                    mReviewsList.setLayoutManager(new LinearLayoutManager(getActivity()));
+                    ReviewsAdapter reviewsAdapter = new ReviewsAdapter(reviews);
+                    mReviewsList.setAdapter(reviewsAdapter);
                 }
 
                 @Override
@@ -156,6 +170,47 @@ public class MovieDetailFragment extends Fragment {
         }
 
         return rootView;
+    }
+
+    public class ReviewsAdapter
+            extends RecyclerView.Adapter<ReviewsAdapter.ReviewHolder> {
+
+        private final List<Review> mValues;
+
+        public ReviewsAdapter(List<Review> items) {
+            mValues = items;
+        }
+
+        @Override
+        public ReviewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            View view = LayoutInflater.from(parent.getContext())
+                    .inflate(R.layout.review_item, parent, false);
+            return new ReviewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(final ReviewHolder holder, int position) {
+            Review review = mValues.get(position);
+            holder.authorView.setText(review.getAuthor());
+            holder.contentView.setText(review.getContent());
+        }
+
+        @Override
+        public int getItemCount() {
+            return (null != mValues ? mValues.size() : 0);
+        }
+
+        public class ReviewHolder extends RecyclerView.ViewHolder {
+            public TextView authorView;
+            public TextView contentView;
+
+            public ReviewHolder(View view) {
+                super(view);
+                authorView = (TextView) view.findViewById(R.id.review_author);
+                contentView = (TextView) view.findViewById(R.id.review_content);
+            }
+
+        }
     }
 
 }

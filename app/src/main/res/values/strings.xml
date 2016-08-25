@@ -25,5 +25,6 @@
 
     <string name="rating">Rating: %s/10</string>
     <string name="release_date">Release date: %s</string>
+    <string name="reviews_label">Reviews</string>
 
 </resources>

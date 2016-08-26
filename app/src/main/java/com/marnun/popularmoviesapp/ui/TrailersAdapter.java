@@ -1,4 +1,4 @@
-package com.marnun.popularmoviesapp;
+package com.marnun.popularmoviesapp.ui;
 
 import android.app.Activity;
 import android.content.Context;
@@ -14,6 +14,9 @@ import com.google.android.youtube.player.YouTubeInitializationResult;
 import com.google.android.youtube.player.YouTubeStandalonePlayer;
 import com.google.android.youtube.player.YouTubeThumbnailLoader;
 import com.google.android.youtube.player.YouTubeThumbnailView;
+import com.marnun.popularmoviesapp.BuildConfig;
+import com.marnun.popularmoviesapp.R;
+import com.marnun.popularmoviesapp.data.Trailer;
 
 import java.util.List;
 

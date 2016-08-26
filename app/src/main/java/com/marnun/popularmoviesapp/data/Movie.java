@@ -1,4 +1,6 @@
-package com.marnun.popularmoviesapp;
+package com.marnun.popularmoviesapp.data;
+
+import com.marnun.popularmoviesapp.utility.Utility;
 
 import java.io.Serializable;
 import java.util.Date;

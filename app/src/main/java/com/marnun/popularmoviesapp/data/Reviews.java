@@ -1,4 +1,4 @@
-package com.marnun.popularmoviesapp;
+package com.marnun.popularmoviesapp.data;
 
 import java.util.List;
 
@@ -7,6 +7,6 @@ import java.util.List;
  */
 public class Reviews {
 
-    List<Review> results;
+    public List<Review> results;
 
 }

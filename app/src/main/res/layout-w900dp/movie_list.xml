@@ -7,7 +7,7 @@
               android:divider="?android:attr/dividerHorizontal"
               android:orientation="horizontal"
               android:showDividers="middle"
-              tools:context="com.marnun.popularmoviesapp.MovieListActivity">
+              tools:context=".ui.MovieListActivity">
 
     <!--
     This layout is a two-pane layout for the Movies
@@ -23,7 +23,7 @@
         android:layout_width="0dp"
         android:layout_height="match_parent"
         android:layout_weight="1"
-        tools:context="com.marnun.popularmoviesapp.MovieListActivity"
+        tools:context=".ui.MovieListActivity"
         tools:listitem="@layout/movie_list_content"/>
 
     <FrameLayout

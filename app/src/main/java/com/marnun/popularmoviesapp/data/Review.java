@@ -1,4 +1,6 @@
-package com.marnun.popularmoviesapp;
+package com.marnun.popularmoviesapp.data;
+
+import com.marnun.popularmoviesapp.utility.Utility;
 
 /**
  * Created by Marco on 25/08/2016.

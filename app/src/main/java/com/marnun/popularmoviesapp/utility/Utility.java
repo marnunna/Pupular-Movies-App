@@ -1,4 +1,4 @@
-package com.marnun.popularmoviesapp;
+package com.marnun.popularmoviesapp.utility;
 
 import android.util.Log;
 

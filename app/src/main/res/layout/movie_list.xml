@@ -7,6 +7,6 @@
     android:name="com.marnun.popularmoviesapp.MovieListFragment"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context="com.marnun.popularmoviesapp.MovieListActivity"
+    tools:context=".ui.MovieListActivity"
     tools:listitem="@layout/movie_list_content"
     />

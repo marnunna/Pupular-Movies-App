@@ -1,4 +1,4 @@
-package com.marnun.popularmoviesapp;
+package com.marnun.popularmoviesapp.ui;
 
 import android.content.Context;
 import android.content.Intent;
@@ -21,6 +21,11 @@ import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.marnun.popularmoviesapp.BuildConfig;
+import com.marnun.popularmoviesapp.R;
+import com.marnun.popularmoviesapp.data.Movie;
+import com.marnun.popularmoviesapp.data.Movies;
+import com.marnun.popularmoviesapp.data.MoviesService;
 import com.marnun.popularmoviesapp.settings.SettingsActivity;
 import com.squareup.picasso.Picasso;
 

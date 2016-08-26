@@ -1,4 +1,4 @@
-package com.marnun.popularmoviesapp;
+package com.marnun.popularmoviesapp.ui;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -15,6 +15,15 @@ import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.marnun.popularmoviesapp.BuildConfig;
+import com.marnun.popularmoviesapp.R;
+import com.marnun.popularmoviesapp.data.Movie;
+import com.marnun.popularmoviesapp.data.Review;
+import com.marnun.popularmoviesapp.data.Reviews;
+import com.marnun.popularmoviesapp.data.ReviewsService;
+import com.marnun.popularmoviesapp.data.Trailer;
+import com.marnun.popularmoviesapp.data.Trailers;
+import com.marnun.popularmoviesapp.data.TrailersService;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;

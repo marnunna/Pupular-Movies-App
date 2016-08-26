@@ -1,4 +1,6 @@
-package com.marnun.popularmoviesapp.data;
+package com.marnun.popularmoviesapp.data.network;
+
+import com.marnun.popularmoviesapp.data.model.Movie;
 
 import java.util.List;
 

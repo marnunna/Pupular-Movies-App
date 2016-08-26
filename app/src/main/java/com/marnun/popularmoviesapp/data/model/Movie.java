@@ -1,4 +1,4 @@
-package com.marnun.popularmoviesapp.data;
+package com.marnun.popularmoviesapp.data.model;
 
 import com.marnun.popularmoviesapp.utility.Utility;
 

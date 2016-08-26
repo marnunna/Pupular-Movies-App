@@ -1,4 +1,6 @@
-package com.marnun.popularmoviesapp.data;
+package com.marnun.popularmoviesapp.data.network;
+
+import com.marnun.popularmoviesapp.data.model.Trailer;
 
 import java.util.List;
 

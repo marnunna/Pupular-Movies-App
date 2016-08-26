@@ -59,6 +59,9 @@ public class MovieDetailFragment extends Fragment {
     @BindView(R.id.reviews_list)
     RecyclerView mReviewsList;
 
+    @BindView(R.id.trailers_list)
+    RecyclerView mTrailerList;
+
     private Movie mMovie;
 
     /**
@@ -130,14 +133,15 @@ public class MovieDetailFragment extends Fragment {
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
             TrailersService trailersService = retrofitTrailers.create(TrailersService.class);
-            Call<Trailers> callTrailers = trailersService.loadTrailers(mMovie.getId(), BuildConfig.API_KEY);
+            Call<Trailers> callTrailers = trailersService.loadTrailers(mMovie.getId(), BuildConfig.MOVIE_DATABASE_API_KEY);
             callTrailers.enqueue(new Callback<Trailers>() {
                 @Override
                 public void onResponse(Call<Trailers> call, Response<Trailers> response) {
-                    Trailers trailers = response.body();
-                    for (Trailer trailer : trailers.results) {
-                        Log.d(LOG_TAG, trailer.toString());
-                    }
+                    List<Trailer> trailers = response.body().results;
+                    Log.d(LOG_TAG, trailers.toString());
+//                    mTrailerList.setHasFixedSize(true);
+                    TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity(), trailers);
+                    mTrailerList.setAdapter(trailersAdapter);
                 }
 
                 @Override
@@ -151,7 +155,7 @@ public class MovieDetailFragment extends Fragment {
                     .addConverterFactory(GsonConverterFactory.create(gson))
                     .build();
             ReviewsService reviewsService = retrofitReviews.create(ReviewsService.class);
-            Call<Reviews> callReviews = reviewsService.loadReviews(mMovie.getId(), BuildConfig.API_KEY);
+            Call<Reviews> callReviews = reviewsService.loadReviews(mMovie.getId(), BuildConfig.MOVIE_DATABASE_API_KEY);
             callReviews.enqueue(new Callback<Reviews>() {
                 @Override
                 public void onResponse(Call<Reviews> call, Response<Reviews> response) {

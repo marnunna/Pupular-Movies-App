@@ -19,12 +19,13 @@ android {
         }
     }
     buildTypes.each {
-        it.buildConfigField 'String', 'API_KEY', MovieDatabaseApiKey
+        it.buildConfigField 'String', 'MOVIE_DATABASE_API_KEY', MovieDatabaseApiKey
+        it.buildConfigField 'String', 'YOUTUBE_API_KEY', YoutubeApiKey
     }
 }
 
 dependencies {
-    compile fileTree(dir: 'libs', include: ['*.jar'])
+    compile fileTree(include: ['*.jar'], dir: 'libs')
     testCompile 'junit:junit:4.12'
     compile 'com.android.support:appcompat-v7:24.0.0'
     compile 'com.android.support:support-v4:24.0.0'
@@ -36,4 +37,6 @@ dependencies {
     compile 'com.squareup.retrofit2:retrofit:2.1.0'
     compile 'com.squareup.retrofit2:converter-gson:2.1.0'
     apt 'com.jakewharton:butterknife-compiler:8.2.1'
+    compile 'com.android.support:cardview-v7:24.0.0'
+    compile files('libs/YouTubeAndroidPlayerApi.jar')
 }

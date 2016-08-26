@@ -186,7 +186,7 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
         String key = getString(R.string.orders_preference_key);
         String defaultValue = getString(R.string.order_popular_value);
         String sortOrder = sharedPref.getString(key, defaultValue);
-        String apiKey = BuildConfig.API_KEY;
+        String apiKey = BuildConfig.MOVIE_DATABASE_API_KEY;
 
         Gson gson = new GsonBuilder()
                 .setDateFormat("yyyy-MM-dd")

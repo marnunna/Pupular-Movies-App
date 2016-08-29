@@ -32,6 +32,10 @@
             android:name=".settings.SettingsActivity"
             android:label="@string/title_activity_settings">
         </activity>
+        <provider
+            android:authorities="com.marnun.popularmoviesapp.data.db.MovieProvider"
+            android:name="com.marnun.popularmoviesapp.data.db.generated.MovieProvider"
+            android:exported="false"/>
     </application>
 
 </manifest>

@@ -4,6 +4,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v7.app.AppCompatActivity;
@@ -70,7 +72,7 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
 
         mRecyclerView = (RecyclerView) findViewById(R.id.movie_list);
         assert mRecyclerView != null;
-        updateMovies();
+        loadMovies();
 
         if (findViewById(R.id.movie_detail_container) != null) {
             // The detail container view will be present only in the
@@ -84,7 +86,7 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
     @Override
     protected void onResume() {
         super.onResume();
-        updateMovies();
+        loadMovies();
     }
 
     @Override
@@ -182,31 +184,45 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
         return (int) (getPosterWidth() * 1.5);
     }
 
-    private void updateMovies() {
+    private void loadMovies() {
 
 //        MoviesTask moviesTask = new MoviesTask();
 //        moviesTask.execute();
 
-        SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MovieListActivity.this);
-        String key = getString(R.string.orders_preference_key);
-        String defaultValue = getString(R.string.order_popular_value);
-        String sortOrder = sharedPref.getString(key, defaultValue);
-        String apiKey = BuildConfig.MOVIE_DATABASE_API_KEY;
+        ConnectivityManager cm =
+                (ConnectivityManager)this.getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        Gson gson = new GsonBuilder()
-                .setDateFormat("yyyy-MM-dd")
-                .create();
-        Retrofit retrofit = new Retrofit.Builder()
-                .baseUrl(MoviesService.ENDPOINT)
-                .addConverterFactory(GsonConverterFactory.create(gson))
-                .build();
+        NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
+        boolean isConnected = activeNetwork != null &&
+                activeNetwork.isConnectedOrConnecting();
 
-        // prepare call in Retrofit 2.0
-        MoviesService moviesService = retrofit.create(MoviesService.class);
+        if (isConnected) {
+            SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(MovieListActivity.this);
+            String keySortOrder = getString(R.string.orders_preference_key);
+            String defaultValueSortOrder = getString(R.string.order_popular_value);
+            String sortOrder = sharedPref.getString(keySortOrder, defaultValueSortOrder);
+            String apiKey = BuildConfig.MOVIE_DATABASE_API_KEY;
 
-        Call<Movies> call = moviesService.loadMovies(sortOrder, apiKey);
-        //asynchronous call
-        call.enqueue(this);
+            Gson gson = new GsonBuilder()
+                    .setDateFormat("yyyy-MM-dd")
+                    .create();
+            Retrofit retrofit = new Retrofit.Builder()
+                    .baseUrl(MoviesService.ENDPOINT)
+                    .addConverterFactory(GsonConverterFactory.create(gson))
+                    .build();
+
+            // prepare call in Retrofit 2.0
+            MoviesService moviesService = retrofit.create(MoviesService.class);
+
+            Call<Movies> call = moviesService.loadMovies(sortOrder, apiKey);
+            //asynchronous call
+            call.enqueue(this);
+        } else {
+
+            TextView errorView = (TextView) findViewById(R.id.error_textview);
+            errorView.setText("No internet connection");
+            errorView.setVisibility(View.VISIBLE);
+        }
 
     }
 

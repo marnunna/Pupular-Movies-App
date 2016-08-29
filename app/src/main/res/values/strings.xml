@@ -27,5 +27,10 @@
     <string name="release_date">Release date: %s</string>
     <string name="reviews_label">Reviews</string>
     <string name="trailers_label">Trailers</string>
+    <string name="movie_poster_image_description">Movie\'s poster image</string>
+    <string name="original_title_placeholder">Original title</string>
+    <string name="rating_placeholder">Rating: 5/10</string>
+    <string name="release_date_placeholder">Release date: 10-12-2015</string>
+    <string name="movie_synopsis_placeholder">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tempor urna at sodales hendrerit. Donec quis semper diam. Donec vitae elit diam. Pellentesque lorem tortor, ultrices at feugiat a, eleifend sit amet libero. Morbi scelerisque sem orci, sed hendrerit ligula condimentum non. Nunc laoreet lectus nisi, non tempor leo fringilla non. Ut sodales consequat purus. Ut lobortis lectus eu lorem consectetur volutpat. Ut ex lectus, aliquet et justo et, convallis sollicitudin ex. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Etiam libero arcu, euismod in felis vitae, pharetra faucibus ipsum. Vestibulum eu risus ante.</string>
 
 </resources>

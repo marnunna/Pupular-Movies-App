@@ -1,7 +1,5 @@
 package com.marnun.popularmoviesapp.data.model;
 
-import com.marnun.popularmoviesapp.utility.Utility;
-
 /**
  * Created by Marco on 25/08/2016.
  */
@@ -28,6 +26,9 @@ public class Review {
 
     @Override
     public String toString() {
-        return Utility.toString(this);
+        return "Review{" +
+                "author='" + author + '\'' +
+                ", content='" + content + '\'' +
+                '}';
     }
 }

@@ -1,7 +1,5 @@
 package com.marnun.popularmoviesapp.data.model;
 
-import com.marnun.popularmoviesapp.utility.Utility;
-
 import java.io.Serializable;
 import java.util.Date;
 
@@ -76,6 +74,14 @@ public class Movie implements Serializable {
 
     @Override
     public String toString() {
-        return Utility.toString(this);
+        return "Movie{" +
+                "id='" + id + '\'' +
+                ", original_title='" + original_title + '\'' +
+                ", poster_path='" + poster_path + '\'' +
+                ", overview='" + overview + '\'' +
+                ", vote_average=" + vote_average +
+                ", release_date=" + release_date +
+                ", backdrop_path='" + backdrop_path + '\'' +
+                '}';
     }
 }

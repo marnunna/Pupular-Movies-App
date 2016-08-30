@@ -4,23 +4,29 @@
     <string name="title_activity_settings">Settings</string>
     <string name="action_settings">Settings</string>
 
-    <string name="order_popular_label">Pupular</string>
-    <string name="order_top_rated_label">Top rated</string>
     <string name="orders_preference_title">Order by</string>
     <string name="orders_preference_key">orders_list</string>
+
+    <string name="order_popular_label">Pupular</string>
+    <string name="order_top_rated_label">Top rated</string>
+    <string name="order_favorites_label">Favorites</string>
+
+    <string name="order_popular_value">popular</string>
+    <string name="order_top_rated_value">top_rated</string>
+    <string name="order_favorites_value">favorites</string>
 
     <string-array name="orders_preference_labels">
         <item>@string/order_popular_label</item>
         <item>@string/order_top_rated_label</item>
+        <item>@string/order_favorites_label</item>
     </string-array>
 
     <string-array name="orders_preference_values">
         <item>@string/order_popular_value</item>
         <item>@string/order_top_rated_value</item>
+        <item>@string/order_favorites_value</item>
     </string-array>
 
-    <string name="order_popular_value">popular</string>
-    <string name="order_top_rated_value">top_rated</string>
     <string name="error_message">Error retrieving movies from internet, please check connection</string>
 
     <string name="rating">Rating: %s/10</string>
@@ -30,7 +36,11 @@
     <string name="movie_poster_image_description">Movie\'s poster image</string>
     <string name="original_title_placeholder">Original title</string>
     <string name="rating_placeholder">Rating: 5/10</string>
-    <string name="release_date_placeholder">Release date: 10-12-2015</string>
+    <string name="release_date_placeholder">Release date: 10–12–2015</string>
     <string name="movie_synopsis_placeholder">Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer tempor urna at sodales hendrerit. Donec quis semper diam. Donec vitae elit diam. Pellentesque lorem tortor, ultrices at feugiat a, eleifend sit amet libero. Morbi scelerisque sem orci, sed hendrerit ligula condimentum non. Nunc laoreet lectus nisi, non tempor leo fringilla non. Ut sodales consequat purus. Ut lobortis lectus eu lorem consectetur volutpat. Ut ex lectus, aliquet et justo et, convallis sollicitudin ex. Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia Curae; Etiam libero arcu, euismod in felis vitae, pharetra faucibus ipsum. Vestibulum eu risus ante.</string>
+    <string name="favorite_button_text">Mark as favorite</string>
+    <string name="favorite_button_message">Marked as favorite, to see favorites go to settings and choose favorites</string>
+    <string name="error_connection">No internet connection</string>
+    <string name="overview_label">Overview</string>
 
 </resources>

@@ -1,6 +1,7 @@
 package com.marnun.popularmoviesapp.ui;
 
 import android.app.Activity;
+import android.content.ContentValues;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
@@ -10,20 +11,25 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.marnun.popularmoviesapp.BuildConfig;
 import com.marnun.popularmoviesapp.R;
+import com.marnun.popularmoviesapp.data.db.MovieColumns;
+import com.marnun.popularmoviesapp.data.db.MovieProvider;
 import com.marnun.popularmoviesapp.data.model.Movie;
 import com.marnun.popularmoviesapp.data.model.Review;
+import com.marnun.popularmoviesapp.data.model.Trailer;
 import com.marnun.popularmoviesapp.data.network.Reviews;
 import com.marnun.popularmoviesapp.data.network.ReviewsService;
-import com.marnun.popularmoviesapp.data.model.Trailer;
 import com.marnun.popularmoviesapp.data.network.Trailers;
 import com.marnun.popularmoviesapp.data.network.TrailersService;
+import com.marnun.popularmoviesapp.utility.Utility;
 import com.squareup.picasso.Picasso;
 
 import java.text.SimpleDateFormat;
@@ -71,6 +77,15 @@ public class MovieDetailFragment extends Fragment {
     @BindView(R.id.trailers_list)
     RecyclerView mTrailerList;
 
+    @BindView(R.id.favorite_button)
+    Button mFavoriteButton;
+
+    @BindView(R.id.reviews_label)
+    TextView mReviewsLabel;
+
+    @BindView(R.id.trailers_label)
+    TextView mTrailersLabel;
+
     private Movie mMovie;
 
     /**
@@ -92,13 +107,17 @@ public class MovieDetailFragment extends Fragment {
     }
 
     private void setImageToolbar() {
-        Activity activity = this.getActivity();
-        CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
-        if (appBarLayout != null) {
-            appBarLayout.setTitle("");
-            Picasso.with(getActivity())
-                    .load("http://image.tmdb.org/t/p/original" + mMovie.getBackdropPath())
-                    .into((ImageView) appBarLayout.findViewById(R.id.image_collapsing_toolbar));
+        String backdropPath = mMovie.getBackdropPath();
+        if (null != backdropPath) {
+            Activity activity = this.getActivity();
+            CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
+            if (appBarLayout != null) {
+                appBarLayout.setTitle("");
+
+                Picasso.with(getActivity())
+                        .load("http://image.tmdb.org/t/p/original" + backdropPath)
+                        .into((ImageView) appBarLayout.findViewById(R.id.image_collapsing_toolbar));
+            }
         }
     }
 
@@ -124,62 +143,97 @@ public class MovieDetailFragment extends Fragment {
             String ratingString = String.format(getString(R.string.rating), mMovie.getUserRating().toString());
             mRatingView.setText(ratingString);
 
-            String releaseDate = new SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(mMovie.getReleaseDate());
+            String releaseDate = Utility.sdf.format(mMovie.getReleaseDate());
             String dateString = String.format(getString(R.string.release_date), releaseDate);
             mReleaseDateView.setText(dateString);
 
-            int posterWidth = MovieListActivity.getPosterWidth();
-            int posterHeight = MovieListActivity.getPosterHeight();
-            Picasso.with(getActivity())
-                    .load("http://image.tmdb.org/t/p/w500" + mMovie.getPosterPath())
-                    .resize(posterWidth, posterHeight)
-                    .into(mPosterDetailView);
+            String posterPath = mMovie.getPosterPath();
+            if (null != posterPath) {
+                int posterWidth = MovieListActivity.getPosterWidth();
+                int posterHeight = MovieListActivity.getPosterHeight();
+                Picasso.with(getActivity())
+                        .load("http://image.tmdb.org/t/p/w500" + posterPath)
+                        .resize(posterWidth, posterHeight)
+                        .into(mPosterDetailView);
 
-            Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
+                Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
 
-            Retrofit retrofitTrailers = new Retrofit.Builder()
-                    .baseUrl(TrailersService.ENDPOINT)
-                    .addConverterFactory(GsonConverterFactory.create(gson))
-                    .build();
-            TrailersService trailersService = retrofitTrailers.create(TrailersService.class);
-            Call<Trailers> callTrailers = trailersService.loadTrailers(mMovie.getId(), BuildConfig.MOVIE_DATABASE_API_KEY);
-            callTrailers.enqueue(new Callback<Trailers>() {
-                @Override
-                public void onResponse(Call<Trailers> call, Response<Trailers> response) {
-                    List<Trailer> trailers = response.body().results;
-                    Log.d(LOG_TAG, trailers.toString());
+                Retrofit retrofitTrailers = new Retrofit.Builder()
+                        .baseUrl(TrailersService.ENDPOINT)
+                        .addConverterFactory(GsonConverterFactory.create(gson))
+                        .build();
+                TrailersService trailersService = retrofitTrailers.create(TrailersService.class);
+                Call<Trailers> callTrailers = trailersService.loadTrailers(mMovie.getId(), BuildConfig.MOVIE_DATABASE_API_KEY);
+                callTrailers.enqueue(new Callback<Trailers>() {
+                    @Override
+                    public void onResponse(Call<Trailers> call, Response<Trailers> response) {
+                        List<Trailer> trailers = response.body().results;
+                        Log.d(LOG_TAG, trailers.toString());
 //                    mTrailerList.setHasFixedSize(true);
-                    TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity(), trailers);
-                    mTrailerList.setAdapter(trailersAdapter);
-                }
+                        TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity(), trailers);
+                        mTrailerList.setAdapter(trailersAdapter);
+                    }
 
+                    @Override
+                    public void onFailure(Call<Trailers> call, Throwable t) {
+
+                    }
+                });
+
+                Retrofit retrofitReviews = new Retrofit.Builder()
+                        .baseUrl(ReviewsService.ENDPOINT)
+                        .addConverterFactory(GsonConverterFactory.create(gson))
+                        .build();
+                ReviewsService reviewsService = retrofitReviews.create(ReviewsService.class);
+                Call<Reviews> callReviews = reviewsService.loadReviews(mMovie.getId(), BuildConfig.MOVIE_DATABASE_API_KEY);
+                callReviews.enqueue(new Callback<Reviews>() {
+                    @Override
+                    public void onResponse(Call<Reviews> call, Response<Reviews> response) {
+                        List<Review> reviews = response.body().results;
+                        Log.d(LOG_TAG, reviews.toString());
+                        mReviewsList.setLayoutManager(new LinearLayoutManager(getActivity()));
+                        ReviewsAdapter reviewsAdapter = new ReviewsAdapter(reviews);
+                        mReviewsList.setAdapter(reviewsAdapter);
+                    }
+
+                    @Override
+                    public void onFailure(Call<Reviews> call, Throwable t) {
+
+                    }
+                });
+
+                mFavoriteButton.setVisibility(View.VISIBLE);
+                mTrailersLabel.setVisibility(View.VISIBLE);
+                mReviewsLabel.setVisibility(View.VISIBLE);
+                mReviewsList.setVisibility(View.VISIBLE);
+                mTrailerList.setVisibility(View.VISIBLE);
+                mPosterDetailView.setVisibility(View.VISIBLE);
+
+            } else {
+
+                mFavoriteButton.setVisibility(View.GONE);
+                mTrailersLabel.setVisibility(View.GONE);
+                mReviewsLabel.setVisibility(View.GONE);
+                mReviewsList.setVisibility(View.GONE);
+                mTrailerList.setVisibility(View.GONE);
+                mPosterDetailView.setVisibility(View.GONE);
+
+            }
+
+            mFavoriteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
-                public void onFailure(Call<Trailers> call, Throwable t) {
-
+                public void onClick(View view) {
+                    Toast.makeText(getContext(), R.string.favorite_button_message, Toast.LENGTH_LONG).show();
+                    ContentValues values = new ContentValues();
+                    values.put(MovieColumns.ID, mMovie.getId());
+                    values.put(MovieColumns.ORIGINAL_TITLE, mMovie.getOriginalTitle());
+                    values.put(MovieColumns.OVERVIEW, mMovie.getPlotSynopsis());
+                    values.put(MovieColumns.VOTE_AVERAGE, mMovie.getUserRating());
+                    values.put(MovieColumns.RELEASE_DATE, new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(mMovie.getReleaseDate()));
+                    getContext().getContentResolver().insert(MovieProvider.Movies.CONTENT_URI, values);
                 }
             });
 
-            Retrofit retrofitReviews = new Retrofit.Builder()
-                    .baseUrl(ReviewsService.ENDPOINT)
-                    .addConverterFactory(GsonConverterFactory.create(gson))
-                    .build();
-            ReviewsService reviewsService = retrofitReviews.create(ReviewsService.class);
-            Call<Reviews> callReviews = reviewsService.loadReviews(mMovie.getId(), BuildConfig.MOVIE_DATABASE_API_KEY);
-            callReviews.enqueue(new Callback<Reviews>() {
-                @Override
-                public void onResponse(Call<Reviews> call, Response<Reviews> response) {
-                    List<Review> reviews = response.body().results;
-                    Log.d(LOG_TAG, reviews.toString());
-                    mReviewsList.setLayoutManager(new LinearLayoutManager(getActivity()));
-                    ReviewsAdapter reviewsAdapter = new ReviewsAdapter(reviews);
-                    mReviewsList.setAdapter(reviewsAdapter);
-                }
-
-                @Override
-                public void onFailure(Call<Reviews> call, Throwable t) {
-
-                }
-            });
         }
 
         return rootView;

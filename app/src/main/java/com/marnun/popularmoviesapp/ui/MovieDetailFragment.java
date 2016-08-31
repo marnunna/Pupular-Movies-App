@@ -113,7 +113,7 @@ public class MovieDetailFragment extends Fragment {
 
     private void setImageToolbar() {
         String backdropPath = mMovie.getBackdropPath();
-        if (null != backdropPath) {
+        if (null != backdropPath && Utility.isConnected(getActivity())) {
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
@@ -155,30 +155,21 @@ public class MovieDetailFragment extends Fragment {
             int posterWidth = MovieListActivity.getPosterWidth();
             int posterHeight = MovieListActivity.getPosterHeight();
 
-            if (null != posterPath) {
-
-                Picasso.with(getActivity())
-                        .load("http://image.tmdb.org/t/p/w780" + posterPath)
-                        .resize(posterWidth, posterHeight)
-                        .into(mPosterDetailView);
-
-            } else {
-
-                ContextWrapper cw = new ContextWrapper(getActivity());
-                File directory = cw.getDir("posterDir", Context.MODE_PRIVATE);
-                File myImageFile = new File(directory, mMovie.getId()+".jpeg");
-                Picasso.with(getActivity())
-                        .load(myImageFile)
-                        .resize(posterWidth, posterHeight)
-                        .into(mPosterDetailView);
-
-            }
-
-
             if (Utility.isConnected(getActivity())) {
+
+                //load poster image from web
+                if (null != posterPath) {
+
+                    Picasso.with(getActivity())
+                            .load("http://image.tmdb.org/t/p/w780" + posterPath)
+                            .resize(posterWidth, posterHeight)
+                            .into(mPosterDetailView);
+
+                }
 
                 Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
 
+                //load trailers from web
                 Retrofit retrofitTrailers = new Retrofit.Builder()
                         .baseUrl(TrailersService.ENDPOINT)
                         .addConverterFactory(GsonConverterFactory.create(gson))
@@ -199,6 +190,7 @@ public class MovieDetailFragment extends Fragment {
                     }
                 });
 
+                //load reviews from web
                 Retrofit retrofitReviews = new Retrofit.Builder()
                         .baseUrl(ReviewsService.ENDPOINT)
                         .addConverterFactory(GsonConverterFactory.create(gson))
@@ -219,6 +211,17 @@ public class MovieDetailFragment extends Fragment {
                     }
                 });
 
+            } else {
+
+                //load image from memory
+                ContextWrapper cw = new ContextWrapper(getActivity());
+                File directory = cw.getDir("posterDir", Context.MODE_PRIVATE);
+                File myImageFile = new File(directory, mMovie.getId()+".jpeg");
+                Picasso.with(getActivity())
+                        .load(myImageFile)
+                        .resize(posterWidth, posterHeight)
+                        .into(mPosterDetailView);
+
             }
 
             mFavoriteButton.setVisibility(Utility.isFavorite(getActivity(), mMovie) ? View.GONE : View.VISIBLE);
@@ -238,6 +241,8 @@ public class MovieDetailFragment extends Fragment {
                     values.put(MovieColumns.OVERVIEW, mMovie.getPlotSynopsis());
                     values.put(MovieColumns.VOTE_AVERAGE, mMovie.getUserRating());
                     values.put(MovieColumns.RELEASE_DATE, Utility.sdf.format(mMovie.getReleaseDate()));
+                    values.put(MovieColumns.POSTER_PATH, mMovie.getPosterPath());
+                    values.put(MovieColumns.BACKDROP_PATH, mMovie.getBackdropPath());
 
                     Picasso.with(getActivity())
                             .load("http://image.tmdb.org/t/p/w780" + mMovie.getPosterPath())
@@ -312,7 +317,9 @@ public class MovieDetailFragment extends Fragment {
                             e.printStackTrace();
                         } finally {
                             try {
-                                fos.close();
+                                if (fos != null) {
+                                    fos.close();
+                                }
                             } catch (IOException e) {
                                 e.printStackTrace();
                             }
@@ -327,7 +334,6 @@ public class MovieDetailFragment extends Fragment {
             }
             @Override
             public void onPrepareLoad(Drawable placeHolderDrawable) {
-                if (placeHolderDrawable != null) {}
             }
         };
     }

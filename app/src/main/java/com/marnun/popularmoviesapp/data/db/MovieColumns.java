@@ -19,6 +19,10 @@ public interface MovieColumns {
     public static final String VOTE_AVERAGE = "vote_average";
     @DataType(DataType.Type.TEXT)
     public static final String RELEASE_DATE = "release_date";
+    @DataType(DataType.Type.TEXT)
+    public static final String POSTER_PATH = "poster_path";
+    @DataType(DataType.Type.TEXT)
+    public static final String BACKDROP_PATH = "backdrop_path";
 
 }
 

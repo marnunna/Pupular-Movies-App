@@ -60,6 +60,8 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
 
     private final String LOG_TAG = MovieListActivity.class.getSimpleName();
 
+    private static final int FAVORITES_LOADER = 0;
+
     /**
      * Whether or not the activity is in two-pane mode, i.e. running on a tablet
      * device.
@@ -305,28 +307,12 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
     }
 
 
-    //loader members (for favorites movies))
-
-    private static final int FAVORITES_LOADER = 0;
-    private static final String[] FAVORITES_COLUMNS = {
-            MovieColumns.ID,
-            MovieColumns.ORIGINAL_TITLE,
-            MovieColumns.VOTE_AVERAGE,
-            MovieColumns.RELEASE_DATE,
-            MovieColumns.OVERVIEW
-    };
-
-    static final int COL_MOVIE_ID = 0;
-    static final int COL_MOVIE_ORIGINAL_TITLE = 1;
-    static final int COL_MOVIE_VOTE_AVERAGE = 2;
-    static final int COL_MOVIE_RELEASE_DATE = 3;
-    static final int COL_MOVIE_OVERVIEW = 4;
-
+    //loader methods (for favorites movies))
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(this,
                 MovieProvider.Movies.CONTENT_URI,
-                FAVORITES_COLUMNS,
+                null,
                 null,
                 null,
                 null);
@@ -338,11 +324,13 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
         if (null != cursor) {
             if (cursor.moveToFirst()) {
                 do {
-                    String id = cursor.getString(COL_MOVIE_ID);
-                    String originalTitle = cursor.getString(COL_MOVIE_ORIGINAL_TITLE);
-                    String voteAverage = cursor.getString(COL_MOVIE_VOTE_AVERAGE);
-                    String releaseDate = cursor.getString(COL_MOVIE_RELEASE_DATE);
-                    String synopsis = cursor.getString(COL_MOVIE_OVERVIEW);
+                    String id = cursor.getString(cursor.getColumnIndex(MovieColumns.ID));
+                    String originalTitle = cursor.getString(cursor.getColumnIndex(MovieColumns.ORIGINAL_TITLE));
+                    String voteAverage = cursor.getString(cursor.getColumnIndex(MovieColumns.VOTE_AVERAGE));
+                    String releaseDate = cursor.getString(cursor.getColumnIndex(MovieColumns.RELEASE_DATE));
+                    String synopsis = cursor.getString(cursor.getColumnIndex(MovieColumns.OVERVIEW));
+                    String posterPath = cursor.getString(cursor.getColumnIndex(MovieColumns.POSTER_PATH));
+                    String backdropPath = cursor.getString(cursor.getColumnIndex(MovieColumns.BACKDROP_PATH));
                     Movie movie = new Movie();
                     movie.setId(id);
                     movie.setOriginalTitle(originalTitle);
@@ -354,6 +342,8 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
                         e.printStackTrace();
                     }
                     movie.setPlotSynopsis(synopsis);
+                    movie.setPosterPath(posterPath);
+                    movie.setBackdropPath(backdropPath);
                     movies.add(movie);
                 } while (cursor.moveToNext());
             }

@@ -196,7 +196,7 @@ public class MovieDetailFragment extends Fragment {
                     @Override
                     public void onResponse(Call<Trailers> call, Response<Trailers> response) {
                         List<Trailer> trailers = response.body().results;
-                        TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity().getApplicationContext(), trailers);
+                        TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity(), trailers);
                         mTrailerList.setAdapter(trailersAdapter);
                     }
 

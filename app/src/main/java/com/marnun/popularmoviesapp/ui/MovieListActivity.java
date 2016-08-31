@@ -1,11 +1,10 @@
 package com.marnun.popularmoviesapp.ui;
 
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.v4.app.LoaderManager;
@@ -38,6 +37,7 @@ import com.marnun.popularmoviesapp.settings.SettingsActivity;
 import com.marnun.popularmoviesapp.utility.Utility;
 import com.squareup.picasso.Picasso;
 
+import java.io.File;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
@@ -145,13 +145,21 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
             String title = holder.mMovie.getOriginalTitle();
             holder.mTitleView.setText(title);
             holder.mView.setMinimumWidth(getPosterWidth());
+            holder.mView.setMinimumHeight(getPosterHeight());
             String posterPath = holder.mMovie.getPosterPath();
             if (null != posterPath) {
-                holder.mView.setMinimumHeight(getPosterHeight());
                 String uri = "http://image.tmdb.org/t/p/w780";
                 uri += posterPath;
                 Picasso.with(getBaseContext())
                         .load(uri)
+                        .resize(getPosterWidth() - 50, getPosterHeight() - 50)
+                        .into(holder.mPosterView);
+            } else {
+                ContextWrapper cw = new ContextWrapper(getApplicationContext());
+                File directory = cw.getDir("posterDir", Context.MODE_PRIVATE);
+                File myImageFile = new File(directory, holder.mMovie.getId()+".jpeg");
+                Picasso.with(getBaseContext())
+                        .load(myImageFile)
                         .resize(getPosterWidth() - 50, getPosterHeight() - 50)
                         .into(holder.mPosterView);
             }
@@ -224,12 +232,7 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
             //get movies from api
 
             //check for internet connection
-            ConnectivityManager cm =
-                    (ConnectivityManager) this.getSystemService(Context.CONNECTIVITY_SERVICE);
-
-            NetworkInfo activeNetwork = cm.getActiveNetworkInfo();
-            boolean isConnected = activeNetwork != null &&
-                    activeNetwork.isConnectedOrConnecting();
+            boolean isConnected = Utility.isConnected(this);
 
             if (isConnected) {
 
@@ -249,11 +252,14 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
                 Call<Movies> call = moviesService.loadMovies(sortCriteria, apiKey);
                 //asynchronous call
                 call.enqueue(this);
+
             } else {
 
+                displayMovies(new ArrayList<Movie>());
                 TextView errorView = (TextView) findViewById(R.id.error_textview);
                 errorView.setText(R.string.error_connection);
                 errorView.setVisibility(View.VISIBLE);
+
             }
         }
     }

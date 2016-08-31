@@ -2,10 +2,13 @@ package com.marnun.popularmoviesapp.ui;
 
 import android.app.Activity;
 import android.content.ContentValues;
+import android.content.Context;
+import android.content.ContextWrapper;
+import android.graphics.Bitmap;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
-import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -31,10 +34,12 @@ import com.marnun.popularmoviesapp.data.network.Trailers;
 import com.marnun.popularmoviesapp.data.network.TrailersService;
 import com.marnun.popularmoviesapp.utility.Utility;
 import com.squareup.picasso.Picasso;
+import com.squareup.picasso.Target;
 
-import java.text.SimpleDateFormat;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.List;
-import java.util.Locale;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
@@ -127,7 +132,6 @@ public class MovieDetailFragment extends Fragment {
         setImageToolbar();
     }
 
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -136,9 +140,9 @@ public class MovieDetailFragment extends Fragment {
 
         if (mMovie != null) {
 
-            mMoviePlotView.setText(mMovie.getPlotSynopsis());
-
             mTitleView.setText(mMovie.getOriginalTitle());
+
+            mMoviePlotView.setText(mMovie.getPlotSynopsis());
 
             String ratingString = String.format(getString(R.string.rating), mMovie.getUserRating().toString());
             mRatingView.setText(ratingString);
@@ -148,13 +152,30 @@ public class MovieDetailFragment extends Fragment {
             mReleaseDateView.setText(dateString);
 
             String posterPath = mMovie.getPosterPath();
+            int posterWidth = MovieListActivity.getPosterWidth();
+            int posterHeight = MovieListActivity.getPosterHeight();
+
             if (null != posterPath) {
-                int posterWidth = MovieListActivity.getPosterWidth();
-                int posterHeight = MovieListActivity.getPosterHeight();
+
                 Picasso.with(getActivity())
-                        .load("http://image.tmdb.org/t/p/w500" + posterPath)
+                        .load("http://image.tmdb.org/t/p/w780" + posterPath)
                         .resize(posterWidth, posterHeight)
                         .into(mPosterDetailView);
+
+            } else {
+
+                ContextWrapper cw = new ContextWrapper(getActivity());
+                File directory = cw.getDir("posterDir", Context.MODE_PRIVATE);
+                File myImageFile = new File(directory, mMovie.getId()+".jpeg");
+                Picasso.with(getActivity())
+                        .load(myImageFile)
+                        .resize(posterWidth, posterHeight)
+                        .into(mPosterDetailView);
+
+            }
+
+
+            if (Utility.isConnected(getActivity())) {
 
                 Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
 
@@ -168,8 +189,6 @@ public class MovieDetailFragment extends Fragment {
                     @Override
                     public void onResponse(Call<Trailers> call, Response<Trailers> response) {
                         List<Trailer> trailers = response.body().results;
-                        Log.d(LOG_TAG, trailers.toString());
-//                    mTrailerList.setHasFixedSize(true);
                         TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity(), trailers);
                         mTrailerList.setAdapter(trailersAdapter);
                     }
@@ -190,8 +209,6 @@ public class MovieDetailFragment extends Fragment {
                     @Override
                     public void onResponse(Call<Reviews> call, Response<Reviews> response) {
                         List<Review> reviews = response.body().results;
-                        Log.d(LOG_TAG, reviews.toString());
-                        mReviewsList.setLayoutManager(new LinearLayoutManager(getActivity()));
                         ReviewsAdapter reviewsAdapter = new ReviewsAdapter(reviews);
                         mReviewsList.setAdapter(reviewsAdapter);
                     }
@@ -202,23 +219,14 @@ public class MovieDetailFragment extends Fragment {
                     }
                 });
 
-                mFavoriteButton.setVisibility(View.VISIBLE);
-                mTrailersLabel.setVisibility(View.VISIBLE);
-                mReviewsLabel.setVisibility(View.VISIBLE);
-                mReviewsList.setVisibility(View.VISIBLE);
-                mTrailerList.setVisibility(View.VISIBLE);
-                mPosterDetailView.setVisibility(View.VISIBLE);
-
-            } else {
-
-                mFavoriteButton.setVisibility(View.GONE);
-                mTrailersLabel.setVisibility(View.GONE);
-                mReviewsLabel.setVisibility(View.GONE);
-                mReviewsList.setVisibility(View.GONE);
-                mTrailerList.setVisibility(View.GONE);
-                mPosterDetailView.setVisibility(View.GONE);
-
             }
+
+            mFavoriteButton.setVisibility(Utility.isFavorite(getActivity(), mMovie) ? View.GONE : View.VISIBLE);
+
+            mTrailersLabel.setVisibility(Utility.isConnected(getActivity()) ? View.VISIBLE : View.GONE);
+            mReviewsLabel.setVisibility(Utility.isConnected(getActivity()) ? View.VISIBLE : View.GONE);
+            mReviewsList.setVisibility(Utility.isConnected(getActivity()) ? View.VISIBLE : View.GONE);
+            mTrailerList.setVisibility(Utility.isConnected(getActivity()) ? View.VISIBLE : View.GONE);
 
             mFavoriteButton.setOnClickListener(new View.OnClickListener() {
                 @Override
@@ -229,7 +237,12 @@ public class MovieDetailFragment extends Fragment {
                     values.put(MovieColumns.ORIGINAL_TITLE, mMovie.getOriginalTitle());
                     values.put(MovieColumns.OVERVIEW, mMovie.getPlotSynopsis());
                     values.put(MovieColumns.VOTE_AVERAGE, mMovie.getUserRating());
-                    values.put(MovieColumns.RELEASE_DATE, new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(mMovie.getReleaseDate()));
+                    values.put(MovieColumns.RELEASE_DATE, Utility.sdf.format(mMovie.getReleaseDate()));
+
+                    Picasso.with(getActivity())
+                            .load("http://image.tmdb.org/t/p/w780" + mMovie.getPosterPath())
+                            .into(picassoImageTarget(getActivity(), "posterDir", mMovie.getId()+".jpeg"));
+
                     getContext().getContentResolver().insert(MovieProvider.Movies.CONTENT_URI, values);
                 }
             });
@@ -278,6 +291,45 @@ public class MovieDetailFragment extends Fragment {
             }
 
         }
+    }
+
+    private Target picassoImageTarget(Context context, final String imageDir, final String imageName) {
+        Log.d(LOG_TAG, " picassoImageTarget");
+        ContextWrapper cw = new ContextWrapper(context);
+        final File directory = cw.getDir(imageDir, Context.MODE_PRIVATE); // path to /data/data/yourapp/app_imageDir
+        return new Target() {
+            @Override
+            public void onBitmapLoaded(final Bitmap bitmap, Picasso.LoadedFrom from) {
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        final File myImageFile = new File(directory, imageName); // Create image file
+                        FileOutputStream fos = null;
+                        try {
+                            fos = new FileOutputStream(myImageFile);
+                            bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos);
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        } finally {
+                            try {
+                                fos.close();
+                            } catch (IOException e) {
+                                e.printStackTrace();
+                            }
+                        }
+                        Log.i(LOG_TAG, "image saved to >>>" + myImageFile.getAbsolutePath());
+                    }
+                }).start();
+            }
+
+            @Override
+            public void onBitmapFailed(Drawable errorDrawable) {
+            }
+            @Override
+            public void onPrepareLoad(Drawable placeHolderDrawable) {
+                if (placeHolderDrawable != null) {}
+            }
+        };
     }
 
 }

@@ -101,6 +101,7 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
     protected void onResume() {
         super.onResume();
         String sortCriteria = Utility.getSortCriteria(this);
+        //load movies only if the sort criteria was changed
         if(!mSortCriteria.equals(sortCriteria)){
             loadMovies();
             mSortCriteria = sortCriteria;
@@ -149,7 +150,9 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
             holder.mView.setMinimumWidth(getPosterWidth());
             holder.mView.setMinimumHeight(getPosterHeight());
             String posterPath = holder.mMovie.getPosterPath();
-            if (null != posterPath) {
+            if (Utility.isConnected(MovieListActivity.this)) {
+
+                //load poster image from web
                 String uri = "http://image.tmdb.org/t/p/w780";
                 uri += posterPath;
                 Picasso.with(getBaseContext())
@@ -157,14 +160,17 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
                         .resize(getPosterWidth() - 50, getPosterHeight() - 50)
                         .into(holder.mPosterView);
             } else {
+
+                //load poster image from memory
                 ContextWrapper cw = new ContextWrapper(getApplicationContext());
-                File directory = cw.getDir("posterDir", Context.MODE_PRIVATE);
+                File directory = cw.getDir(Utility.POSTER_DIRECTORY, Context.MODE_PRIVATE);
                 File myImageFile = new File(directory, holder.mMovie.getId()+".jpeg");
                 Picasso.with(getBaseContext())
                         .load(myImageFile)
                         .resize(getPosterWidth() - 50, getPosterHeight() - 50)
                         .into(holder.mPosterView);
             }
+
             holder.mView.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
@@ -219,9 +225,6 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
 
     private void loadMovies() {
 
-//        MoviesTask moviesTask = new MoviesTask();
-//        moviesTask.execute();
-
         String sortCriteria = Utility.getSortCriteria(this);
 
         if (sortCriteria.equals(getString(R.string.order_favorites_value))) {
@@ -233,12 +236,13 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
 
             //get movies from api
 
-            //check for internet connection
             boolean isConnected = Utility.isConnected(this);
 
             if (isConnected) {
 
                 String apiKey = BuildConfig.MOVIE_DATABASE_API_KEY;
+
+                //load movies using retrofit
 
                 Gson gson = new GsonBuilder()
                         .setDateFormat("yyyy-MM-dd")
@@ -297,7 +301,6 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
     @Override
     public void onResponse(Call<Movies> call, Response<Movies> response) {
         List<Movie> movies = response.body().results;
-
         displayMovies(movies);
     }
 
@@ -307,7 +310,7 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
     }
 
 
-    //loader methods (for favorites movies))
+    //loader methods (for favorites movies)
     @Override
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(this,
@@ -338,7 +341,7 @@ public class MovieListActivity extends AppCompatActivity implements Callback<Mov
                     try {
                         movie.setReleaseDate(Utility.sdf.parse(releaseDate));
                     } catch (ParseException e) {
-                        Log.e(LOG_TAG, "error parsing date");
+                        Log.e(LOG_TAG, "Error parsing date");
                         e.printStackTrace();
                     }
                     movie.setPlotSynopsis(synopsis);

@@ -10,7 +10,6 @@ import android.os.Bundle;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v7.widget.RecyclerView;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -113,17 +112,34 @@ public class MovieDetailFragment extends Fragment {
 
     private void setImageToolbar() {
         String backdropPath = mMovie.getBackdropPath();
-        if (null != backdropPath && Utility.isConnected(getActivity())) {
+        if (null != backdropPath) {
+
             Activity activity = this.getActivity();
             CollapsingToolbarLayout appBarLayout = (CollapsingToolbarLayout) activity.findViewById(R.id.toolbar_layout);
             if (appBarLayout != null) {
                 appBarLayout.setTitle("");
 
-                Picasso.with(getActivity())
-                        .load("http://image.tmdb.org/t/p/original" + backdropPath)
-                        .into((ImageView) appBarLayout.findViewById(R.id.image_collapsing_toolbar));
+                if (Utility.isConnected(activity)) {
+
+                    //load backdrop image from web
+                    Picasso.with(activity)
+                            .load("http://image.tmdb.org/t/p/original" + backdropPath)
+                            .into((ImageView) appBarLayout.findViewById(R.id.image_collapsing_toolbar));
+                } else {
+
+                    //load backdrop image from memory
+                    ContextWrapper cw = new ContextWrapper(activity);
+                    File backdropDirectory = cw.getDir(Utility.BACKDROP_DIRECTORY, Context.MODE_PRIVATE);
+                    File backdropFile = new File(backdropDirectory, mMovie.getId()+".jpeg");
+                    Picasso.with(activity)
+                            .load(backdropFile)
+                            .into((ImageView) appBarLayout.findViewById(R.id.image_collapsing_toolbar));
+                }
+
             }
         }
+
+
     }
 
     @Override
@@ -169,7 +185,7 @@ public class MovieDetailFragment extends Fragment {
 
                 Gson gson = new GsonBuilder().setDateFormat("yyyy-MM-dd").create();
 
-                //load trailers from web
+                //load trailers from web using retrofit
                 Retrofit retrofitTrailers = new Retrofit.Builder()
                         .baseUrl(TrailersService.ENDPOINT)
                         .addConverterFactory(GsonConverterFactory.create(gson))
@@ -180,7 +196,7 @@ public class MovieDetailFragment extends Fragment {
                     @Override
                     public void onResponse(Call<Trailers> call, Response<Trailers> response) {
                         List<Trailer> trailers = response.body().results;
-                        TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity(), trailers);
+                        TrailersAdapter trailersAdapter = new TrailersAdapter(getActivity().getApplicationContext(), trailers);
                         mTrailerList.setAdapter(trailersAdapter);
                     }
 
@@ -190,7 +206,7 @@ public class MovieDetailFragment extends Fragment {
                     }
                 });
 
-                //load reviews from web
+                //load reviews from web using retrofit
                 Retrofit retrofitReviews = new Retrofit.Builder()
                         .baseUrl(ReviewsService.ENDPOINT)
                         .addConverterFactory(GsonConverterFactory.create(gson))
@@ -213,12 +229,12 @@ public class MovieDetailFragment extends Fragment {
 
             } else {
 
-                //load image from memory
+                //load poster image from memory
                 ContextWrapper cw = new ContextWrapper(getActivity());
-                File directory = cw.getDir("posterDir", Context.MODE_PRIVATE);
-                File myImageFile = new File(directory, mMovie.getId()+".jpeg");
+                File posterDirectory = cw.getDir(Utility.POSTER_DIRECTORY, Context.MODE_PRIVATE);
+                File posterFile = new File(posterDirectory, mMovie.getId()+".jpeg");
                 Picasso.with(getActivity())
-                        .load(myImageFile)
+                        .load(posterFile)
                         .resize(posterWidth, posterHeight)
                         .into(mPosterDetailView);
 
@@ -235,6 +251,8 @@ public class MovieDetailFragment extends Fragment {
                 @Override
                 public void onClick(View view) {
                     Toast.makeText(getContext(), R.string.favorite_button_message, Toast.LENGTH_LONG).show();
+
+                    //inserting movie in database
                     ContentValues values = new ContentValues();
                     values.put(MovieColumns.ID, mMovie.getId());
                     values.put(MovieColumns.ORIGINAL_TITLE, mMovie.getOriginalTitle());
@@ -244,11 +262,19 @@ public class MovieDetailFragment extends Fragment {
                     values.put(MovieColumns.POSTER_PATH, mMovie.getPosterPath());
                     values.put(MovieColumns.BACKDROP_PATH, mMovie.getBackdropPath());
 
+                    //save poster image using picasso
                     Picasso.with(getActivity())
                             .load("http://image.tmdb.org/t/p/w780" + mMovie.getPosterPath())
-                            .into(picassoImageTarget(getActivity(), "posterDir", mMovie.getId()+".jpeg"));
+                            .into(picassoImageTarget(getActivity(), Utility.POSTER_DIRECTORY, mMovie.getId()+".jpeg"));
+
+                    //save backdrop image using picasso
+                    Picasso.with(getActivity())
+                            .load("http://image.tmdb.org/t/p/original" + mMovie.getBackdropPath())
+                            .into(picassoImageTarget(getActivity(), Utility.BACKDROP_DIRECTORY, mMovie.getId()+".jpeg"));
 
                     getContext().getContentResolver().insert(MovieProvider.Movies.CONTENT_URI, values);
+
+                    mFavoriteButton.setVisibility(View.GONE);
                 }
             });
 
@@ -298,8 +324,10 @@ public class MovieDetailFragment extends Fragment {
         }
     }
 
+    /*
+    * This method return a target required by picasso for downloading images in memory
+     */
     private Target picassoImageTarget(Context context, final String imageDir, final String imageName) {
-        Log.d(LOG_TAG, " picassoImageTarget");
         ContextWrapper cw = new ContextWrapper(context);
         final File directory = cw.getDir(imageDir, Context.MODE_PRIVATE); // path to /data/data/yourapp/app_imageDir
         return new Target() {
@@ -324,11 +352,9 @@ public class MovieDetailFragment extends Fragment {
                                 e.printStackTrace();
                             }
                         }
-                        Log.i(LOG_TAG, "image saved to >>>" + myImageFile.getAbsolutePath());
                     }
                 }).start();
             }
-
             @Override
             public void onBitmapFailed(Drawable errorDrawable) {
             }

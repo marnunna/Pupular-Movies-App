@@ -22,6 +22,9 @@ public class Utility {
 
     public final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",Locale.getDefault());
 
+    public final static String POSTER_DIRECTORY = "poster_directory";
+    public final static String BACKDROP_DIRECTORY = "backdrop_directory";
+
     public static String getSortCriteria(Context context){
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);
         String keySortOrder = context.getString(R.string.orders_preference_key);
@@ -41,6 +44,10 @@ public class Utility {
         return false;
     }
 
+    /**
+     * This method check for internet connection
+     * @return the state of the connection of the device
+     */
     public static boolean isConnected(Context context) {
         ConnectivityManager cm =
                 (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);

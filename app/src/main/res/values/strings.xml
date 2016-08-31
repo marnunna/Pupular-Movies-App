@@ -42,5 +42,7 @@
     <string name="favorite_button_message">Marked as favorite, to see favorites go to settings and choose favorites</string>
     <string name="error_connection">No internet connection</string>
     <string name="overview_label">Overview</string>
+    <string name="backdrop_image_description">Backdrop image</string>
+    <string name="play_trailer_image_description">Play trailer</string>
 
 </resources>

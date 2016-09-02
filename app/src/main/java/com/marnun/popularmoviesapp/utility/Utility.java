@@ -18,12 +18,14 @@ import java.util.Locale;
 /**
  * Created by Marco on 25/08/2016.
  */
-public class Utility {
+public final class Utility {
 
     public final static SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd",Locale.getDefault());
 
     public final static String POSTER_DIRECTORY = "poster_directory";
     public final static String BACKDROP_DIRECTORY = "backdrop_directory";
+
+    private Utility(){}
 
     public static String getSortCriteria(Context context){
         SharedPreferences sharedPref = PreferenceManager.getDefaultSharedPreferences(context);

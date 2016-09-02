@@ -23,7 +23,7 @@ import java.util.List;
 public class TrailersAdapter extends RecyclerView.Adapter<TrailersAdapter.VideoInfoHolder> {
 
     Context ctx;
-    List<Trailer> mTrailers;
+    private List<Trailer> mTrailers;
 
     public TrailersAdapter(Context context, List<Trailer> trailers) {
         this.ctx = context;

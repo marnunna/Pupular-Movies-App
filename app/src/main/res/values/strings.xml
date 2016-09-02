@@ -5,7 +5,7 @@
     <string name="action_settings">Settings</string>
 
     <string name="orders_preference_title">Order by</string>
-    <string name="orders_preference_key">orders_list</string>
+    <string name="orders_preference_key" translatable="false">orders_list</string>
 
     <string name="order_popular_label">Pupular</string>
     <string name="order_top_rated_label">Top rated</string>
